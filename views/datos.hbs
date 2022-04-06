@@ -1,0 +1,47 @@
+<div class="container text-center my-3">
+    <div class="jumbotron" style="background-color: green;color: white;">
+        <h1>USER OK LOGIN!</h1>
+        <h2><i>Bienvenido {{datos.nombre}}</i></h2>
+        <br>
+        <h3>dirección: {{datos.direccion}}</h3>
+        <button class="btn btn-danger my-5" onclick="location.href='/logout'">LOGOUT</button>
+    </div>
+</div>
+<form class="bg-success p-2 text-dark bg-opacity-25" id="formProduct">
+    <button type="submit" class="btn btn-primary">Generar producto</button>
+</form>
+<table class="table bg-primary p-2 text-light">
+    <thead>
+        <tr>
+        <th scope="col">Titulo</th>
+        <th scope="col">precio</th>
+        <th scope="col">imagen</th>
+        </tr>
+    </thead>
+    <tbody id="contentTable">
+
+    </tbody>
+</table>
+    <div class="mainContainer_Messages">
+        <h2 class="bg-success p-2 text-dark bg-opacity-25">Centro de mensajes</h2>
+        <form class="bg-success p-2 text-dark bg-opacity-25" id="formUser">
+            <div class="mb-3">
+                <label for="usuario" class="form-label">Nombre de usuario</label>
+                <input name="usuario" type="text" class="form-control" id="nombreUsuario" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Ingresar</button>
+        </form>
+        <div id="contentMessages">
+            <div id="contentMessages_body">
+
+            </div>
+            <form class="bg-success p-2 text-dark bg-opacity-25" id="formMessage">
+                <div class="mb-3">
+                    <label for="mensaje" class="form-label">Mensaje</label>
+                    <input name="mensaje" type="text" class="form-control" id="mensajeUsuario" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Enviar</button>
+            </form>
+        </div>
+    </div>
+
