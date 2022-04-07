@@ -8,6 +8,7 @@ const path = require("path");
 const passport = require("passport");
 const config = require('./config');
 const messages = require('./models/mensajes');
+const users = require('./models/users');
 const mongoose = require("mongoose");
 const util = require('util');
 const { normalizeMessages, messageDenormalize } = require('./modules/normalize');
@@ -15,6 +16,8 @@ const LocalStrategy = Strategy;
 const { faker } = require('@faker-js/faker');
 const { Server: IOServer } = require('socket.io');
 const { Server: HttpServer} = require('http');
+const bcrypt = require("bcrypt");
+
 
 
 const app = express();
@@ -29,18 +32,15 @@ const uri = config.mongoRemote.cnxStr;
 
 
 passport.use(new LocalStrategy(
-    (username, password, done)=>{
-        //Logica para validar si un usuario existe
-        const existeUsuario = usuariosDB.find(usuario => {
-            return usuario.nombre == username;
-        });
-
+    async (username, password, done)=>{
+        const [existeUsuario] = await users.find({user: username})
+        const result = bcrypt.compareSync(password, existeUsuario.pass);
         if (!existeUsuario) {
             console.log('Usuario no encontrado')
             return done(null, false);
         }
 
-        if(!(existeUsuario.password == password)){
+        if(!result){
             console.log('Contrase;a invalida')
             return done(null, false);
         }
@@ -50,11 +50,11 @@ passport.use(new LocalStrategy(
 ))
 
 passport.serializeUser((usuario, done)=>{
-    done(null, usuario.nombre);
+    done(null, usuario.user);
 })
 
-passport.deserializeUser((nombre, done)=>{
-    const usuario = usuariosDB.find(usuario => usuario.nombre == nombre);
+passport.deserializeUser(async (nombre, done)=>{
+    const usuario = await users.find({user: nombre})
     done(null, usuario);
 });
 
@@ -156,7 +156,7 @@ app.get('/api/productos-test', async(req, res) => {
     }
 })
 app.get('/', (req, res)=>{
-    if (req.session.nombre) {
+    if (req.session.user) {
         res.redirect('/datos')
     } else {
         res.redirect('/login')
@@ -181,23 +181,29 @@ app.get('/register', (req, res)=>{
 app.get('/login-error', (req, res)=>{
     res.render('login-error');
 })
-app.post('/register', (req, res)=>{
+app.post('/register', async (req, res)=>{
     const {nombre, password, direccion } = req.body;
-    
-    const newUsuario = usuariosDB.find(usuario => usuario.nombre == nombre);
-    if (newUsuario) {
+    const [newUser] = await users.find({user: nombre})
+
+    if (newUser) {
         res.render('register-error')
     } else {
-        usuariosDB.push({nombre, password, direccion});
+        bcrypt.hash(password, 5, async function(err, hash) {
+            const newUserToAddModel = new users({
+                user: nombre,
+                pass: hash,
+                adress: direccion
+            });
+            await newUserToAddModel.save()
+        });
         res.redirect('/login')
     }
 });
 
 app.get('/datos', isAuth, (req, res)=>{
-
     const infoUser = {
-        nombre: req.user.nombre,
-        direccion: req.user.direccion
+        user: req.user[0].user,
+        adress: req.user[0].adress
     }
     res.render('datos', {datos: infoUser});
 });

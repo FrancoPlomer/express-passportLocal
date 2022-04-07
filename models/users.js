@@ -12,6 +12,10 @@ const usersSchema = new mongoose.Schema({
         type: String, 
         require: true, 
     },
+    adress: {
+        type: String, 
+        require: true, 
+    },
 })
 
 const users = mongoose.model(usersCollection, usersSchema);
